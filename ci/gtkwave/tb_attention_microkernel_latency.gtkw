@@ -1,0 +1,24 @@
+[*] GTKWave Analyzer v3.3.126 (w)1999-2026 BSI
+@c00200
+-CTRL
+@28
+tb_attention_microkernel_latency.clk
+tb_attention_microkernel_latency.rst_n
+tb_attention_microkernel_latency.cfg_valid
+tb_attention_microkernel_latency.start_mk
+tb_attention_microkernel_latency.busy_mk
+tb_attention_microkernel_latency.done_mk
+@c00200
+-LOAD PATH
+@28
+tb_attention_microkernel_latency.load_q_valid
+tb_attention_microkernel_latency.load_q_idx[5:0]
+tb_attention_microkernel_latency.load_q_word[31:0]
+tb_attention_microkernel_latency.load_k_valid
+tb_attention_microkernel_latency.load_k_idx[5:0]
+tb_attention_microkernel_latency.load_k_word[31:0]
+@c00200
+-RESULT
+@28
+tb_attention_microkernel_latency.result_valid_mk
+tb_attention_microkernel_latency.result_mk[31:0]

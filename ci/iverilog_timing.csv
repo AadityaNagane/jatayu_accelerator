@@ -1,0 +1,6 @@
+simulator,testbench,duration_ms
+iverilog,tb_register_rename_table,28
+iverilog,tb_systolic_array,22
+iverilog,tb_multi_issue_rename_integration,21
+iverilog,tb_attention_microkernel_latency,1812
+iverilog,TOTAL,1890

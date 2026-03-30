@@ -1,0 +1,34 @@
+[*] GTKWave Analyzer v3.3.126 (w)1999-2026 BSI
+@c00200
+-CTRL
+@28
+tb_register_rename_table.clk
+tb_register_rename_table.rst_n
+tb_register_rename_table.rename_valid_i[3:0]
+tb_register_rename_table.rename_ready_o[3:0]
+tb_register_rename_table.commit_valid_i[3:0]
+tb_register_rename_table.commit_ready_o
+@c00200
+-ARCH INPUTS
+@28
+tb_register_rename_table.arch_rs1_i[19:0]
+tb_register_rename_table.arch_rs2_i[19:0]
+tb_register_rename_table.arch_rd_i[19:0]
+@c00200
+-PHYS OUTPUTS
+@28
+tb_register_rename_table.phys_rs1_o[23:0]
+tb_register_rename_table.phys_rs2_o[23:0]
+tb_register_rename_table.phys_rd_o[23:0]
+tb_register_rename_table.old_phys_rd_o[23:0]
+@c00200
+-FREE LIST
+@28
+tb_register_rename_table.free_list_empty_o
+tb_register_rename_table.free_count_o[6:0]
+@c00200
+-SCOREBOARD
+@28
+tb_register_rename_table.test_count[31:0]
+tb_register_rename_table.pass_count[31:0]
+tb_register_rename_table.fail_count[31:0]

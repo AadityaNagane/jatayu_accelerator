@@ -1,0 +1,4 @@
+testbench,max_ms
+tb_attention_microkernel_latency,20000
+tb_norm_act_ctrl,20000
+TOTAL,30000

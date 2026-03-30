@@ -1,0 +1,214 @@
+// INT8 MAC execution unit
+// Performs multiply-accumulate and saturation operations on INT8 data
+
+module int8_mac_unit
+  import int8_mac_instr_pkg::*;
+#(
+    parameter int unsigned XLEN     = 32
+) (
+    input  logic                  clk_i,
+    input  logic                  rst_ni,
+    
+    input  logic [XLEN-1:0]       rs1_i,
+    input  logic [XLEN-1:0]       rs2_i,
+    input  logic [XLEN-1:0]       rd_i,
+    input  opcode_t               opcode_i,
+    input  logic [1:0]            hartid_i,
+    input  logic [2:0]            id_i,
+    input  logic [4:0]            rd_addr_i,
+    
+    output logic [XLEN-1:0]       result_o,
+    output logic                  valid_o,
+    output logic                  we_o,
+    output logic [4:0]            rd_addr_o,
+    output logic [1:0]            hartid_o,
+    output logic [2:0]            id_o,
+    output logic                  overflow_o      // Saturation occurred flag
+);
+
+  logic signed [7:0]  a, b, acc_8bit;
+  logic signed [15:0] product;
+  logic signed [8:0]  sum_9bit;
+  logic signed [31:0] sum_32bit;
+  
+  // SIMD Dot Product Signals
+  logic signed [7:0]  rs1_bytes [3:0];
+  logic signed [7:0]  rs2_bytes [3:0];
+  logic signed [15:0] products [3:0];
+  logic signed [31:0] dot_product;
+
+  logic [XLEN-1:0] result_comb;
+  logic            valid_comb, we_comb;
+  logic            overflow_comb;
+  
+  logic [XLEN-1:0] result_q;
+  logic            valid_q, we_q;
+  logic            overflow_q;
+  logic [4:0]      rd_addr_q;
+  logic [1:0]      hartid_q;
+  logic [2:0]      id_q;
+
+  // Scalar assignments
+  assign a = rs1_i[7:0];
+  assign b = rs2_i[7:0];
+  assign acc_8bit = rd_i[7:0];
+  
+  assign product = a * b;
+  assign sum_9bit = $signed({product[7], product[7:0]}) + $signed({acc_8bit[7], acc_8bit});
+  assign sum_32bit = $signed({{16{product[15]}}, product}) + $signed(rd_i);
+
+  logic signed [31:0] sum_mac8;
+  assign sum_mac8 = $signed({{16{product[15]}}, product}) + $signed({{24{acc_8bit[7]}}, acc_8bit});
+
+  // SIMD assignments
+  always_comb begin
+    rs1_bytes[0] = rs1_i[7:0];
+    rs1_bytes[1] = rs1_i[15:8];
+    rs1_bytes[2] = rs1_i[23:16];
+    rs1_bytes[3] = rs1_i[31:24];
+
+    rs2_bytes[0] = rs2_i[7:0];
+    rs2_bytes[1] = rs2_i[15:8];
+    rs2_bytes[2] = rs2_i[23:16];
+    rs2_bytes[3] = rs2_i[31:24];
+
+    for (int i = 0; i < 4; i++) begin
+      products[i] = rs1_bytes[i] * rs2_bytes[i];
+    end
+    
+    // Sum 4 products + accumulator
+    // Note: Intermediate sums can grow, but final result fits in 32-bit (mostly)
+    // 4 * (127 * 127) = 64516, which fits in 17 bits. 32-bit acc is safe.
+    dot_product = $signed(products[0]) + $signed(products[1]) + 
+                  $signed(products[2]) + $signed(products[3]) + 
+                  $signed(rd_i);
+  end
+  
+  always_comb begin
+    result_comb = '0;
+    valid_comb  = 1'b0;
+    we_comb     = 1'b0;
+    overflow_comb = 1'b0;
+    
+    case (opcode_i)
+      MAC8: begin
+        if (sum_mac8 > 127) begin
+          result_comb = {{24{1'b0}}, 8'sd127};
+          overflow_comb = 1'b1;  // Positive overflow
+        end else if (sum_mac8 < -128) begin
+          result_comb = {{24{1'b1}}, 8'h80};
+          overflow_comb = 1'b1;  // Negative overflow
+        end else begin
+          result_comb = {{24{sum_mac8[7]}}, sum_mac8[7:0]};
+          overflow_comb = 1'b0;  // No overflow
+        end
+        valid_comb = 1'b1;
+        we_comb    = 1'b1;
+      end
+      
+      MAC8_ACC: begin
+        result_comb = sum_32bit;
+        valid_comb  = 1'b1;
+        we_comb     = 1'b1;
+      end
+      
+      MUL8: begin
+        result_comb = {{16{product[15]}}, product};
+        valid_comb  = 1'b1;
+        we_comb     = 1'b1;
+      end
+      
+      CLIP8: begin
+        if ($signed(rs1_i) > 32'sd127) begin
+          result_comb = {{24{1'b0}}, 8'sd127};
+          overflow_comb = 1'b1;  // Clipped to max
+        end else if ($signed(rs1_i) < -32'sd128) begin
+          result_comb = {{24{1'b1}}, 8'h80};
+          overflow_comb = 1'b1;  // Clipped to min
+        end else begin
+          result_comb = {{24{rs1_i[7]}}, rs1_i[7:0]};
+          overflow_comb = 1'b0;  // No clipping
+        end
+        valid_comb = 1'b1;
+        we_comb    = 1'b1;
+      end
+
+      SIMD_DOT: begin
+        result_comb = dot_product;
+        valid_comb  = 1'b1;
+        we_comb     = 1'b1;
+        // No saturation on 32-bit accumulation for now
+        overflow_comb = 1'b0; 
+      end
+      
+      // ATT_DOT_* instructions are handled by attention_microkernel_engine in coprocessor
+      ATT_DOT_SETUP,
+      ATT_DOT_RUN,
+      ATT_DOT_RUN_SCALE,
+      ATT_DOT_RUN_CLIP,
+      // Phase-1 grouped opcodes are handled in coprocessor control path.
+      MATMUL_CTRL,
+      NORM_ACT: begin
+        result_comb = '0;
+        valid_comb  = 1'b0;  // Not handled by this unit
+        we_comb     = 1'b0;
+        overflow_comb = 1'b0;
+      end
+      
+      default: begin
+        result_comb = '0;
+        valid_comb  = 1'b0;
+        we_comb     = 1'b0;
+      end
+    endcase
+  end
+  
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      result_q   <= '0;
+      valid_q    <= '0;
+      we_q       <= '0;
+      overflow_q <= '0;
+      rd_addr_q  <= '0;
+      hartid_q   <= '0;
+      id_q       <= '0;
+    end else begin
+      result_q   <= result_comb;
+      valid_q    <= valid_comb;
+      we_q       <= we_comb;
+      overflow_q <= overflow_comb;
+      rd_addr_q  <= rd_addr_i;
+      hartid_q   <= hartid_i;
+      id_q       <= id_i;
+    end
+  end
+  
+  assign result_o   = result_q;
+  assign valid_o    = valid_q;
+  assign we_o       = we_q;
+  assign overflow_o = overflow_q;
+  assign rd_addr_o  = rd_addr_q;
+  assign hartid_o   = hartid_q;
+  assign id_o       = id_q;
+  
+  // Assertions for verification
+  `ifndef SYNTHESIS
+  // Check that opcode is valid (ATT_DOT_* handled by microkernel engine in coprocessor)
+  property p_valid_opcode;
+    @(posedge clk_i) disable iff (!rst_ni)
+    (opcode_i inside {MAC8, MAC8_ACC, MUL8, CLIP8, SIMD_DOT, ATT_DOT_SETUP, ATT_DOT_RUN, ATT_DOT_RUN_SCALE, ATT_DOT_RUN_CLIP, MATMUL_CTRL, NORM_ACT, ILLEGAL});
+  endproperty
+  assert property (p_valid_opcode) else $error("Invalid opcode received");
+  
+  // Check that valid implies writeback
+  property p_valid_implies_we;
+    @(posedge clk_i) disable iff (!rst_ni)
+    (valid_o |-> we_o);
+  endproperty
+  assert property (p_valid_implies_we) else $error("Valid output without writeback");
+  
+  // Coverage: Track overflow events
+  cover property (@(posedge clk_i) overflow_o);
+  `endif
+
+endmodule

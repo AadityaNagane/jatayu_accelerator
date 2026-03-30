@@ -1,0 +1,8 @@
+testbench,max_ms
+tb_register_rename_table,30000
+tb_systolic_array,30000
+tb_multi_issue_rename_integration,30000
+tb_attention_microkernel_latency,30000
+tb_matmul_ctrl_fsm,40000
+tb_norm_act_ctrl,30000
+TOTAL,120000

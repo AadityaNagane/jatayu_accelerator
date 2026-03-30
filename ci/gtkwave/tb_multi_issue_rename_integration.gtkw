@@ -1,0 +1,27 @@
+[*] GTKWave Analyzer v3.3.126 (w)1999-2026 BSI
+@c00200
+-CTRL
+@28
+tb_multi_issue_rename_integration.clk
+tb_multi_issue_rename_integration.rst_n
+tb_multi_issue_rename_integration.rename_valid_i[3:0]
+tb_multi_issue_rename_integration.rename_ready_o[3:0]
+tb_multi_issue_rename_integration.commit_valid_i[3:0]
+tb_multi_issue_rename_integration.commit_ready_o
+@c00200
+-RENAME MAP
+@28
+tb_multi_issue_rename_integration.arch_rd_i[19:0]
+tb_multi_issue_rename_integration.phys_rd_o[23:0]
+tb_multi_issue_rename_integration.old_phys_rd_o[23:0]
+@c00200
+-BACKPRESSURE
+@28
+tb_multi_issue_rename_integration.free_list_empty_o
+tb_multi_issue_rename_integration.free_count_o[6:0]
+@c00200
+-SCOREBOARD
+@28
+tb_multi_issue_rename_integration.test_count[31:0]
+tb_multi_issue_rename_integration.pass_count[31:0]
+tb_multi_issue_rename_integration.fail_count[31:0]

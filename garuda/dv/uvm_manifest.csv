@@ -1,0 +1,15 @@
+# suite,test,script,enabled,priority,block,status
+uvm_systolic,sa_smoke_test,garuda/dv/uvm_systolic/run_uvm.sh,1,p0,systolic_array,active
+uvm_systolic,sa_random_test,garuda/dv/uvm_systolic/run_uvm.sh,1,p0,systolic_array,active
+uvm_attention,amk_smoke_test,garuda/dv/uvm_attention/run_uvm.sh,1,p0,attention_microkernel_engine,active
+uvm_attention,amk_random_test,garuda/dv/uvm_attention/run_uvm.sh,1,p0,attention_microkernel_engine,active
+uvm_register_rename,rr_smoke_test,garuda/dv/uvm_register_rename/run_uvm.sh,1,p1,register_rename_table,active
+uvm_register_rename,rr_random_test,garuda/dv/uvm_register_rename/run_uvm.sh,1,p1,register_rename_table,active
+uvm_dma,dma_smoke_test,garuda/dv/uvm_dma/run_uvm.sh,1,p1,dma_engine,active
+uvm_coprocessor,cvxif_smoke_test,garuda/dv/uvm_coprocessor/run_uvm.sh,1,p1,int8_mac_coprocessor,active
+uvm_matmul_ctrl,mm_ctrl_smoke_test,garuda/dv/uvm_matmul_ctrl/run_uvm.sh,1,p1,int8_mac_decoder,active
+uvm_multilane,multilane_smoke_test,garuda/dv/uvm_multilane/run_uvm.sh,1,p2,int8_mac_multilane_unit,active
+uvm_buffers,buffer_smoke_test,garuda/dv/uvm_buffers/run_uvm.sh,1,p2,buffer_subsystem,active
+uvm_integration,system_smoke_test,integration/uvm_system/run_uvm.sh,1,p3,system_top,active
+uvm_kv_cache,kv_smoke_test,garuda/dv/uvm_kv_cache/run_uvm.sh,1,p1,kv_cache_buffer,active
+uvm_kv_cache,kv_random_test,garuda/dv/uvm_kv_cache/run_uvm.sh,1,p1,kv_cache_buffer,active

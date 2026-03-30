@@ -1,0 +1,58 @@
+# Helper files (documentation/guides - not for public repo)
+helper-files/
+
+# Simulation artifacts
+obj_dir/
+*.vvp
+*.vcd
+*.wdb
+*.fsdb
+*.log
+*.dump
+*.out
+simv*
+csrc/
+DVEfiles/
+work/
+transcript
+*.vstf
+
+# Verilator
+*.d
+*.o
+*.a
+*.mk
+
+# Integration / Verilator artifacts
+Vtb_system_top
+Vtb_*
+*.vpp
+
+# Build artifacts
+build/
+garuda_inference
+garuda_inference_rtl
+*.pyc
+__pycache__/
+cva6_files.list
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+
+# Markdown docs (keep READMEs only)
+mdfiles/
+GITHUB_LAUNCH_CHECKLIST.md

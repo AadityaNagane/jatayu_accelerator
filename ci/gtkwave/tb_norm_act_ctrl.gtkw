@@ -1,0 +1,22 @@
+[*] GTKWave Analyzer v3.3.126 (w)1999-2026 BSI
+@c00200
+-CTRL
+@28
+tb_norm_act_ctrl.clk
+tb_norm_act_ctrl.rst_n
+tb_norm_act_ctrl.cvxif_req_issue_valid
+tb_norm_act_ctrl.cvxif_resp_issue_ready
+tb_norm_act_ctrl.cvxif_resp_result_valid
+@c00200
+-CVXIF PAYLOAD
+@28
+tb_norm_act_ctrl.cvxif_req_issue_req_instr[31:0]
+tb_norm_act_ctrl.cvxif_req_register_rs[63:0]
+tb_norm_act_ctrl.cvxif_resp_result_data[31:0]
+tb_norm_act_ctrl.cvxif_resp_result_rd[4:0]
+@c00200
+-SCOREBOARD
+@28
+tb_norm_act_ctrl.test_count[31:0]
+tb_norm_act_ctrl.pass_count[31:0]
+tb_norm_act_ctrl.fail_count[31:0]
