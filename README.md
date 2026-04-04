@@ -662,7 +662,6 @@ Built with:
 - **UVM Framework** - Mentor Graphics UVM 1.2
 - **Icarus Verilog** - Open-source Verilog simulator
 - **Qwen 2.5** - Alibaba Cloud foundation model
-- **SPIT VLSI Design Competition** - Academic collaboration
 
 ---
 
