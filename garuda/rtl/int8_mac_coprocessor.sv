@@ -333,10 +333,7 @@ module int8_mac_coprocessor
   assign norm_subop = norm_subop_t'(issue_funct3);
 
   int8_mac_unit #(
-      .XLEN      (XLEN),
-      .opcode_t  (opcode_t),
-      .hartid_t  (hartid_t),
-      .id_t      (id_t)
+      .XLEN      (XLEN)
   ) i_int8_mac_unit (
       .clk_i      (clk_i),
       .rst_ni     (rst_ni),
