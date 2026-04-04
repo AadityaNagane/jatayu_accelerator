@@ -565,9 +565,9 @@ If you use Jatayu in research, please cite:
 ```bibtex
 @project{jatayu2026,
   title={JATAYU: Hardware-Accelerated RISC-V LLM Inference Engine},
-  author={Your Name},
+  author={Aditya Nagane and Ameya Joshi},
   year={2026},
-  url={https://github.com/your-org/jatayu-accelerator}
+  url={https://github.com/AadityaNagane/jatayu_accelerator}
 }
 ```
 
