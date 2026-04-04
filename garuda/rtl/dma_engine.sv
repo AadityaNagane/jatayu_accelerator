@@ -1,6 +1,11 @@
-// DMA Engine for Garuda Accelerator
-// Provides independent data movement from memory to multi-lane unit
-// Phase 2.1 of Production Roadmap
+// DMA Engine for Garuda Accelerator  
+// Provides independent data movement from/to memory via AXI4
+// Phase 2.1 of Production Roadmap - EXTENDED WITH WRITE SUPPORT v2.0
+//
+// IMPROVEMENTS (v2.0):
+// - Added AXI4 write channels (AW, W, B) for result writeback
+// - Can now both READ weights/activations AND WRITE results
+// - Bidirectional DMA enables persistent result storage
 
 module dma_engine #(
     parameter int unsigned DATA_WIDTH      = 32,  // AXI data width (32, 64, 128 bits)
@@ -13,17 +18,29 @@ module dma_engine #(
     input  logic                        clk_i,
     input  logic                        rst_ni,
     
-    // Configuration/Control Interface (AXI4-Lite style)
-    input  logic                        cfg_valid_i,
-    input  logic [ADDR_WIDTH-1:0]       cfg_src_addr_i,    // Source address
-    input  logic [ADDR_WIDTH-1:0]       cfg_dst_addr_i,    // Destination address (accelerator buffer)
-    input  logic [ADDR_WIDTH-1:0]       cfg_size_i,        // Transfer size in bytes
-    input  logic                        cfg_start_i,       // Start DMA transfer
-    output logic                        cfg_ready_o,
-    output logic                        cfg_done_o,        // Transfer complete
-    output logic                        cfg_error_o,       // Transfer error
+    // Configuration/Control Interface - READ operation
+    input  logic                        cfg_rd_valid_i,
+    input  logic [ADDR_WIDTH-1:0]       cfg_rd_src_addr_i,    // Source address (memory)
+    input  logic [ADDR_WIDTH-1:0]       cfg_rd_dst_addr_i,    // Destination address (buffer)
+    input  logic [ADDR_WIDTH-1:0]       cfg_rd_size_i,        // Transfer size in bytes
+    input  logic                        cfg_rd_start_i,       // Start READ DMA transfer
+    output logic                        cfg_rd_ready_o,
+    output logic                        cfg_rd_done_o,        // READ transfer complete
+    output logic                        cfg_rd_error_o,       // READ transfer error
     
-    // AXI4 Read Interface (for reading from memory)
+    // Configuration/Control Interface - WRITE operation
+    input  logic                        cfg_wr_valid_i,
+    input  logic [ADDR_WIDTH-1:0]       cfg_wr_src_addr_i,    // Source address (buffer)
+    input  logic [ADDR_WIDTH-1:0]       cfg_wr_dst_addr_i,    // Destination address (memory)
+    input  logic [ADDR_WIDTH-1:0]       cfg_wr_size_i,        // Transfer size in bytes
+    input  logic                        cfg_wr_start_i,       // Start WRITE DMA transfer
+    output logic                        cfg_wr_ready_o,
+    output logic                        cfg_wr_done_o,        // WRITE transfer complete
+    output logic                        cfg_wr_error_o,       // WRITE transfer error
+    
+    // =====================================================================
+    // AXI4 READ CHANNEL (existing, for loading weights/activations)
+    // =====================================================================
     output logic                        axi_arvalid_o,
     input  logic                        axi_arready_i,
     output logic [ADDR_WIDTH-1:0]       axi_araddr_o,
@@ -36,17 +53,42 @@ module dma_engine #(
     input  logic [DATA_WIDTH-1:0]       axi_rdata_i,
     input  logic                        axi_rlast_i,
     
-    // Data output to accelerator buffers
+    // =====================================================================
+    // AXI4 WRITE CHANNEL (new, for writing results to memory)
+    // =====================================================================
+    output logic                        axi_awvalid_o,      // Write address valid
+    input  logic                        axi_awready_i,
+    output logic [ADDR_WIDTH-1:0]       axi_awaddr_o,       // Write address
+    output logic [7:0]                  axi_awlen_o,        // Burst length -1
+    output logic [2:0]                  axi_awsize_o,       // Burst size
+    output logic [1:0]                  axi_awburst_o,      // Burst type (INCR)
+    
+    output logic                        axi_wvalid_o,       // Write data valid
+    input  logic                        axi_wready_i,
+    output logic [DATA_WIDTH-1:0]       axi_wdata_o,        // Write data
+    output logic [(DATA_WIDTH/8)-1:0]   axi_wstrb_o,        // Write strobes
+    output logic                        axi_wlast_o,        // Write last
+    
+    input  logic                        axi_bvalid_i,       // Write response valid
+    output logic                        axi_bready_o,       // Write response ready
+    input  logic [1:0]                  axi_bresp_i,        // Write response
+    
+    // Data input FROM buffers (for write operations)
+    input  logic                        data_valid_i,       // Data available for write
+    input  logic [NUM_LANES*LANE_WIDTH-1:0] data_i,        // Wide data from accumulator
+    output logic                        data_ready_o,       // Ready to accept data
+    
+    // Data output TO buffers (for read operations)
     output logic                        data_valid_o,
     output logic [NUM_LANES*LANE_WIDTH-1:0] data_o,  // Wide data bus for multi-lane
     input  logic                        data_ready_i,
     
     // Status
-    output logic                        busy_o             // DMA is active
+    output logic                        busy_o              // DMA is active
 );
 
-  // DMA State Machine
-  typedef enum logic [2:0] {
+  // DMA State Machine (enhanced with WRITE state)
+  typedef enum logic [3:0] {
     IDLE,
     READ_ADDR,
     READ_DATA,

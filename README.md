@@ -1,7 +1,7 @@
 # 🚀 JATAYU: Hardware-Accelerated RISC-V LLM Inference Engine
 
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=flat-square)](https://github.com)
-[![Verification](https://img.shields.io/badge/Tests-14%2F14%20Passing-brightgreen?style=flat-square)](garuda/dv/README_TESTS.md)
+[![Verification](https://img.shields.io/badge/Tests-14%2F14%20Passing-brightgreen?style=flat-square)](garuda/dv/UVM_READINESS.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)](LICENSE)
 [![Language](https://img.shields.io/badge/Language-SystemVerilog%20|%20C%20|%20Python-blue?style=flat-square)](https://github.com)
 

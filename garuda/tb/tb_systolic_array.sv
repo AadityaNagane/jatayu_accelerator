@@ -263,8 +263,8 @@ module tb_systolic_array;
     load_activation_matrix();
     
     // Wait for computation to complete
-    // Computation takes approximately COL_SIZE + ROW_SIZE cycles
-    repeat(COL_SIZE + ROW_SIZE + 5) @(posedge clk);
+    // Pipeline latency: COL_SIZE (for weights to reach all rows) + ROW_SIZE (for activations to propagate) + 2
+    repeat(COL_SIZE + ROW_SIZE + 10) @(posedge clk);
     
     // Wait for results
     result_ready_i = 1'b1;
@@ -336,7 +336,7 @@ module tb_systolic_array;
     load_activation_matrix();
     
     // Wait for computation
-    repeat(COL_SIZE + ROW_SIZE + 5) @(posedge clk);
+    repeat(COL_SIZE + ROW_SIZE + 10) @(posedge clk);
     
     wait_result_valid();
     if (result_valid_o) begin

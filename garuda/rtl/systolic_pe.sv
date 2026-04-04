@@ -1,6 +1,12 @@
 // Systolic Processing Element (PE) - Basic building block for systolic array
-// Phase 4.1 Enhancement: 2D Systolic Array
-// Single PE with MAC operation and data flow
+// Phase 4.1 Enhancement: 2D Systolic Array (FIXED v2.1)
+// Single PE with pipelined MAC operation and data flow
+//
+// ARCHITECTURE:
+// - Weight is stored in weight_reg (loaded via weight_load_i)
+// - Activation and partial-sum flow through (pass-through to neighbors)
+// - Single MAC per clock cycle (multiply stored weight × current activation + partial sum)
+// - Registered accumulator output (proper pipelining)
 
 module systolic_pe #(
     parameter int unsigned DATA_WIDTH = 8,    // INT8 data width
@@ -13,10 +19,10 @@ module systolic_pe #(
     // Data flow: systolic inputs/outputs
     input  logic [DATA_WIDTH-1:0]       weight_i,        // Weight from north (row)
     input  logic [DATA_WIDTH-1:0]       activation_i,    // Activation from west (column)
-    input  logic [ACC_WIDTH-1:0]        partial_sum_i,   // Partial sum from north
+    input  logic [ACC_WIDTH-1:0]        partial_sum_i,   // Partial sum from west
     output logic [DATA_WIDTH-1:0]       weight_o,        // Pass weight to south
     output logic [DATA_WIDTH-1:0]       activation_o,    // Pass activation to east
-    output logic [ACC_WIDTH-1:0]        partial_sum_o,   // Pass partial sum to south
+    output logic [ACC_WIDTH-1:0]        partial_sum_o,   // Pass partial sum to east
     
     // Control
     input  logic                        weight_load_i,   // Load weight into PE
@@ -24,50 +30,61 @@ module systolic_pe #(
     input  logic                        clear_acc_i      // Clear accumulator
 );
 
-  // Internal registers
+  // =========================================================================
+  // Internal State
+  // =========================================================================
   logic [DATA_WIDTH-1:0] weight_reg_q, weight_reg_d;
   logic [ACC_WIDTH-1:0]  accumulator_q, accumulator_d;
   
-  // Multiply: weight × activation
+  // =========================================================================
+  // Multiply-AccumulateOperation (Combinational)
+  // =========================================================================
+  // Compute product of stored weight × current activation
   logic [2*DATA_WIDTH-1:0] product;
-  
-  // Multiply-accumulate operation
   assign product = $signed(weight_reg_q) * $signed(activation_i);
   
-  // Accumulator update
+  // Combinational accumulator update logic
   always_comb begin
     accumulator_d = accumulator_q;
     
-    if (!rst_ni || clear_acc_i) begin
-      accumulator_d = '0;
-    end else if (accumulate_en_i) begin
-      // MAC: accumulator = accumulator + (weight × activation) + partial_sum
+    if (accumulate_en_i) begin
+      // MAC: new_accumulator = old_accumulator + (weight × activation) + partial_sum
       accumulator_d = accumulator_q + $signed(product) + $signed(partial_sum_i);
     end
   end
   
-  // Weight register (loadable)
+  // Weight register update logic
   always_comb begin
     weight_reg_d = weight_reg_q;
     
     if (weight_load_i) begin
-      weight_reg_d = weight_i;  // Load weight from north
+      weight_reg_d = weight_i;  // Load new weight
     end
   end
   
-  // Systolic data flow (pass-through with optional processing)
-  assign weight_o = weight_i;           // Pass weight south (row-wise)
-  assign activation_o = activation_i;   // Pass activation east (column-wise)
-  assign partial_sum_o = accumulator_q; // Output partial sum south
+  // =========================================================================
+  // Data Pass-Through (Systolic Flow)
+  // =========================================================================
+  // Pass data to neighboring PEs (combinational, no delay)
+ assign weight_o = weight_i;            // Pass weight to south
+  assign activation_o = activation_i;    // Pass activation to east
+  assign partial_sum_o = accumulator_q;  // Output accumulated partial sum to east
   
-  // Sequential logic
+  // =========================================================================
+  // Sequential Logic: Update Registers on Clock
+  // =========================================================================
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       weight_reg_q <= '0;
       accumulator_q <= '0;
     end else begin
       weight_reg_q <= weight_reg_d;
-      accumulator_q <= accumulator_d;
+      
+      if (clear_acc_i) begin
+        accumulator_q <= '0;
+      end else begin
+        accumulator_q <= accumulator_d;
+      end
     end
   end
 
