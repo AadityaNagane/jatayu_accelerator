@@ -545,19 +545,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## 📄 License
-
-This project is licensed under the **Apache License 2.0** - see [LICENSE](LICENSE) for details.
-
-Key points:
-- ✅ Commercial use allowed
-- ✅ Modification allowed
-- ✅ Distribution allowed
-- ⚠️ Must include license
-- ⚠️ Changes must be documented
-
----
-
 ## 🎓 Academic References
 
 If you use Jatayu in research, please cite:
