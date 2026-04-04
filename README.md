@@ -545,6 +545,21 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
+## 🙏 Acknowledgments
+
+This project builds upon the excellent foundation of the **[Garuda RISC-V LLM Accelerator](https://github.com/certainly-param/garuda-accelerator)** project. We are deeply grateful for the original architecture, CVXIF interface design, and attention microkernel implementations that served as the starting point for Jatayu.
+
+Jatayu extends Garuda with:
+- Complete systolic array implementation and verification
+- Comprehensive KV cache subsystem
+- Production-grade quantization pipeline
+- Extended test coverage (14→5 more comprehensive tests)
+- Full documentation and deployment guides
+
+See [GARUDA_vs_JATAYU_COMPARISON.md](GARUDA_vs_JATAYU_COMPARISON.md) for detailed evolution analysis.
+
+---
+
 ## 🎓 Academic References
 
 If you use Jatayu in research, please cite:
