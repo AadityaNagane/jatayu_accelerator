@@ -26,15 +26,21 @@ echo ""
 
 for seed in $(seq $SEED_START $SEED_END); do
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "▶ Testing seed ${seed}/${SEED_END}..."
+    echo "▶ Testing seed ${seed}/${SEED_END}..."  
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
-    if SEED=$seed TESTNAME="$TESTNAME" bash garuda/dv/uvm_systolic/run_uvm.sh 2>&1 | grep -q "Failed: 0"; then
+    # Run test and save output for debugging
+    TEST_OUTPUT=$(SEED=$seed TESTNAME="$TESTNAME" bash garuda/dv/uvm_systolic/run_uvm.sh 2>&1)
+    
+    # Check if test passed
+    if echo "$TEST_OUTPUT" | grep -q "ALL TESTS PASSED"; then
         PASS_COUNT=$((PASS_COUNT + 1))
         echo "✅ Seed $seed: PASSED"
     else
         FAIL_COUNT=$((FAIL_COUNT + 1))
         echo "❌ Seed $seed: FAILED"
+        # Debug: show last few lines
+        echo "$TEST_OUTPUT" | tail -5
     fi
     echo ""
 done
