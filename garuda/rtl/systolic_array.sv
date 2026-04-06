@@ -89,8 +89,10 @@ module systolic_array #(
     // Debug: print on every clock
     static int clock_count = 0;
     clock_count++;
-    if (clock_count % 10 == 0 || clock_count < 50) begin
-      $display("[SEQCLK cnt=%0d, t=%0t] state_q=%p, load_row_q=%0d", clock_count, $realtime, state_q, load_row_count_q);
+    if ($realtime >= 340us && $realtime <= 500us) begin
+      $display("[CLK cnt=%0d t=%0t] state=%p row=%0d col=%0d weight_valid=%b act_valid=%b act_ready=%b", 
+               clock_count, $realtime, state_q, load_row_count_q, load_col_count_q, 
+               weight_valid_i, activation_valid_i, activation_ready_o);
     end
     
     if (!rst_ni) begin
@@ -135,30 +137,34 @@ module systolic_array #(
                      $realtime, weight_valid_i, load_row_count_q);
           end
           if (weight_valid_i) begin  // weight_ready_o is 1 in this state
-            if ($realtime >= 240000) 
-              $display("[  WITH WEIGHT] row=%0d checking == %0d?", load_row_count_q, ROW_SIZE-1);
+            // Capture weight data FIRST (to use current load_row_count_q)
+            for (int k = 0; k < COL_SIZE; k++) begin
+              weights_a[load_row_count_q][k] <= $signed(weight_row_i[k*DW +: DW]);
+            end
+            
+            // THEN check if this was the last row
             if (load_row_count_q == (ROW_SIZE - 1)) begin
-              $display("[SEQ @ %0t] LOAD_WEIGHTS: row=%0d == %0d, transitioning to IDLE***", $realtime, load_row_count_q, ROW_SIZE-1);
+              $display("[SEQ @ %0t] LOAD_WEIGHTS: row=%0d == %0d (LAST), transitioning to IDLE", $realtime, load_row_count_q, ROW_SIZE-1);
               state_q <= IDLE;
               load_row_count_q <= 8'd0;
             end else begin
+              $display("[SEQ @ %0t] LOAD_WEIGHTS: row=%0d < %0d (NOT LAST), incrementing", $realtime, load_row_count_q, ROW_SIZE-1);
               load_row_count_q <= load_row_count_q + 1;
-            end
-            // Capture weight data
-            for (int k = 0; k < COL_SIZE; k++) begin
-              weights_a[load_row_count_q][k] <= $signed(weight_row_i[k*DW +: DW]);
             end
           end
         end
 
         LOAD_ACTIVATIONS: begin
           if (activation_valid_i) begin  // activation_ready_o is 1 in this state
+            $display("[SEQ @ %0t] LOAD_ACTIVATIONS: col=%0d, activation_valid_i=%b, checking == %0d?", 
+                     $realtime, load_col_count_q, activation_valid_i, COL_SIZE-1);
             if (load_col_count_q == (COL_SIZE - 1)) begin
               $display("[STATE @ %0t] LOAD_ACT: LAST! col=%0d -> COMPUTE", $realtime, load_col_count_q);
               state_q <= COMPUTE;
               load_col_count_q <= 8'd0;
               compute_count_q <= 8'd0;
             end else begin
+              $display("[STATE @ %0t] LOAD_ACT: col=%0d (not last), incrementing", $realtime, load_col_count_q);
               load_col_count_q <= load_col_count_q + 1;
             end
             // Capture activation data
