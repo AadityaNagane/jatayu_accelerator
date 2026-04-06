@@ -1274,6 +1274,151 @@ bash integration/uvm_system/run_uvm.sh
 
 ---
 
+## 🎲 Seed-Based Testing Guide
+
+### What Is Seed-Based Testing?
+
+Seed-based testing uses a pseudo-random number generator (PRNG) to create different test vectors each run. By specifying a seed value, you can:
+- **Reproduce** exact test conditions (same seed = identical test vectors)
+- **Explore** corner cases with different random patterns
+- **Build confidence** by running 100+ variations
+- **Debug** failures by re-running with the same seed
+
+### How It Works
+
+The PRNG seed controls randomization of:
+- Input weight matrices
+- Activation vectors
+- Optional: test flow variations
+- Optional: enable/disable features
+
+### Quick Examples
+
+**Run with a specific seed (reproducible):**
+```bash
+# Seed 42 - always generates the same test vectors
+SEED=42 TESTNAME=sa_random_test bash garuda/dv/uvm_systolic/run_uvm.sh
+
+# Same seed produces identical results
+SEED=42 TESTNAME=sa_random_test bash garuda/dv/uvm_systolic/run_uvm.sh
+# Output: identical to the previous run
+```
+
+**Run multiple seeds (automated regression):**
+```bash
+# Run seeds 1-10 on systolic array
+bash garuda/dv/uvm_systolic/run_uvm_multi_seed.sh sa_random_test 1 10
+
+# Run seeds 1-50 (comprehensive stress test)
+bash garuda/dv/uvm_systolic/run_uvm_multi_seed.sh sa_random_test 1 50
+
+# What the runner shows:
+# ✅ Seed 1: PASSED
+# ✅ Seed 2: PASSED
+# ...
+# ❌ Seed 15: FAILED   (if found)
+# Results summary: 14/15 passed
+```
+
+**Debug a failed seed:**
+```bash
+# If seed 15 failed in the multi-seed run:
+SEED=15 TESTNAME=sa_random_test bash garuda/dv/uvm_systolic/run_uvm.sh
+
+# Re-run with high verbosity to see details:
+SEED=15 TESTNAME=sa_random_test UVM_VERBOSITY=UVM_HIGH \
+  bash garuda/dv/uvm_systolic/run_uvm.sh
+
+# View the log
+cat build/uvm_systolic/sa_random_test_seed15.log
+```
+
+### Seed Value Guidelines
+
+**Recommended seed ranges:**
+```bash
+# Quick sanity check (single seed)
+SEED=42        # Always works (default test case)
+SEED=0         # Edge case (all zeros-like)
+SEED=255       # Edge case (all ones-like)
+
+# Standard regression (10-20 seeds)
+for seed in {1..10}; do
+    SEED=$seed TESTNAME=sa_random_test \
+        bash garuda/dv/uvm_systolic/run_uvm.sh 2>&1 | grep -i "passed\|failed"
+done
+
+# Comprehensive testing (50+ seeds)
+bash garuda/dv/uvm_systolic/run_uvm_multi_seed.sh sa_random_test 1 50
+
+# Extended testing (100+ seeds, typically overnight)
+bash garuda/dv/uvm_systolic/run_uvm_multi_seed.sh sa_random_test 1 100
+```
+
+### Examining Seed-Based Test Results
+
+**View results for a specific seed:**
+```bash
+# Find logs for seed 42
+ls build/uvm_systolic/*seed42*
+
+# View the detailed log
+cat build/uvm_systolic/sa_random_test_seed42.log
+
+# Extract just pass/fail status
+grep -E "PASSED|FAILED" build/uvm_systolic/sa_random_test_seed42.log
+```
+
+**Compare different seeds:**
+```bash
+# Generate summary of multiple seeds
+for seed in 1 2 3 5 8 13 21; do
+    echo -n "Seed $seed: "
+    SEED=$seed TESTNAME=sa_random_test bash garuda/dv/uvm_systolic/run_uvm.sh 2>&1 \
+        | grep -o "Failed: 0\|Failed: [1-9][0-9]*"
+done
+
+# Output shows pass/fail for each seed
+# Seed 1: Failed: 0
+# Seed 2: Failed: 0
+# ...
+```
+
+### Debugging Failed Seeds
+
+**Step 1: Identify which seed failed**
+```bash
+bash garuda/dv/uvm_systolic/run_uvm_multi_seed.sh sa_random_test 1 20
+# Output shows: ❌ Seed 7: FAILED
+```
+
+**Step 2: Re-run that seed with verbosity**
+```bash
+SEED=7 TESTNAME=sa_random_test UVM_VERBOSITY=UVM_HIGH \
+  bash garuda/dv/uvm_systolic/run_uvm.sh 2>&1 | tee /tmp/debug_seed7.log
+```
+
+**Step 3: Analyze the failure**
+```bash
+# Check test output
+tail -100 /tmp/debug_seed7.log
+
+# Look for specific error patterns
+grep -i "error\|mismatch\|fail" /tmp/debug_seed7.log
+
+# Check the VCD waveform (if available)
+gtkwave waves/systolic_sa_random_test_seed7.vcd &
+```
+
+**Step 4: Report the issue**
+Include in report:
+- Failing seed number (e.g., seed 7)
+- Full command that failed
+- The log file from that run
+- Waveform if available
+
+---
+
 ### Debug Commands
 
 ```bash
