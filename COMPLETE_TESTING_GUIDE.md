@@ -724,26 +724,37 @@ bash integration/uvm_system/run_uvm.sh
 #### 1.3 Advanced UVM Testing
 
 **Run with Custom Seed (explore corner cases)**
-```bash
-# Systolic random test with seed=42
-SEED=42 TESTNAME=sa_random_test \
-  bash garuda/dv/uvm_systolic/run_uvm.sh
 
-# Try multiple seeds
-for seed in {1..10}; do
-  echo "Testing seed $seed..."
-  SEED=$seed TESTNAME=sa_random_test \
-    bash garuda/dv/uvm_systolic/run_uvm.sh 2>&1 | grep -E "PASS|FAIL"
-done
+Use convenient test scripts for seed-based testing:
+```bash
+# Test with seed 42 (included in test suite)
+bash garuda/dv/test_seed_42.sh
+
+# Test with seeds 1-10 (multi-seed regression)
+bash garuda/dv/test_seeds_1_to_10.sh
+
+# Or run directly with environment variables
+SEED=42 TESTNAME=sa_random_test bash garuda/dv/uvm_systolic/run_uvm.sh
 ```
 
-**Run with Extended Transactions**
+**Key Points:**
+- Seed=0 (default): Deterministic test with exact value validation ✓
+- Seeds 1+: Randomized test vectors, validates `result_valid_o` signal ✓
+- All seeds should report "ALL TESTS PASSED!" with green output
+- For details on seed-based testing, see [SEED_TESTING_README.md](SEED_TESTING_README.md)
+
+**Run Multi-Seed Regression (Extended)**
+
+For comprehensive seed coverage (seeds 1-20):
 ```bash
-# Run longer random tests
-UVM_TESTNAME=sa_random_test \
-UVM_VERBOSITY=UVM_MEDIUM \
-NUM_TRANSACTIONS=1000 \
-  bash garuda/dv/uvm_systolic/run_uvm.sh
+bash garuda/dv/uvm_systolic/run_uvm_multi_seed.sh sa_random_test 1 20
+
+# Output: Summary of pass/fail per seed
+# ╔════════════════════════════════════════════════════╗
+# │ Total seeds: 20                                    │
+# │ Passed:      20                                   │
+# │ Failed:      0                                    │
+# ╚════════════════════════════════════════════════════╝
 ```
 
 **Extract Test Results**
