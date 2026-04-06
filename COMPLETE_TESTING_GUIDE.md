@@ -213,16 +213,27 @@ sudo apt update && sudo apt install -y \
 
 ```bash
 # Clone repo
-git clone <repo-url>
-cd garuda-accelerator-personal-main
+git clone https://github.com/AadityaNagane/jatayu_accelerator.git
+cd jatayu_accelerator
 
 # Verify structure
 ls -la
-# Expected: garuda/, integration/, ci/, scripts/, docs/, etc.
+# Expected: garuda/, integration/, ci/, scripts/, docs/, cva6/, etc.
 
 # Set environment
-export GARUDA_ROOT=$(pwd)
+export JATAYU_ROOT=$(pwd)
 export UVM_HOME=$(pwd)/third_party/uvm-1.2
+
+# Optional: Populate CVA6 directory (if doing full system integration)
+if [ ! -d cva6/src ]; then
+    echo "Downloading CVA6 RISC-V CPU..."
+    git clone https://github.com/openhwgroup/cva6.git cva6_temp
+    mv cva6_temp/* cva6/ 2>/dev/null || true
+    rm -rf cva6_temp
+    echo "✅ CVA6 populated in cva6/ directory"
+else
+    echo "✅ CVA6 already present"
+fi
 ```
 
 ### Python Dependencies
@@ -519,14 +530,21 @@ bash garuda/dv/uvm_matmul_ctrl/run_uvm.sh
 
 **Testing:**
 ```bash
+# Optional: Populate CVA6 if not already present
+if [ ! -d cva6/src ]; then
+    git clone https://github.com/openhwgroup/cva6.git cva6_temp
+    mv cva6_temp/* cva6/
+    rm -rf cva6_temp
+fi
+
 # Run system-level integration test
 bash integration/uvm_system/run_uvm.sh
 
-# Requires CVA6 sources populated
-ls cva6/ | head -5  # Should see files
+# Verify CVA6 sources
+ls cva6/ | head -5  # Should see: src/, docs/, etc.
 ```
 
-**Note:** We fixed a Verilator error here as well (same typedef issue).
+**Note:** CVA6 integration is optional for basic testing. Core 14 UVM tests run without it.
 
 ---
 
