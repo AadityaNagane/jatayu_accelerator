@@ -225,15 +225,7 @@ export JATAYU_ROOT=$(pwd)
 export UVM_HOME=$(pwd)/third_party/uvm-1.2
 
 # Optional: Populate CVA6 directory (if doing full system integration)
-if [ ! -d cva6/src ]; then
-    echo "Downloading CVA6 RISC-V CPU..."
-    git clone https://github.com/openhwgroup/cva6.git cva6_temp
-    mv cva6_temp/* cva6/ 2>/dev/null || true
-    rm -rf cva6_temp
-    echo "✅ CVA6 populated in cva6/ directory"
-else
-    echo "✅ CVA6 already present"
-fi
+git clone https://github.com/openhwgroup/cva6.git cva6
 ```
 
 ### Python Dependencies
@@ -305,9 +297,9 @@ bash garuda/dv/uvm_attention/run_uvm.sh
 # Random testing with different sequence lengths
 TESTNAME=amk_random_test bash garuda/dv/uvm_attention/run_uvm.sh
 
-# View waveforms
-KEEP_WAVES=1 bash garuda/dv/uvm_attention/run_uvm.sh
-gtkwave waves/uvm_attention*.vcd &
+# View test logs
+cat build/uvm_attention/amk_smoke_test.log
+cat build/uvm_attention/amk_random_test.log
 ```
 
 ---
@@ -531,11 +523,7 @@ bash garuda/dv/uvm_matmul_ctrl/run_uvm.sh
 **Testing:**
 ```bash
 # Optional: Populate CVA6 if not already present
-if [ ! -d cva6/src ]; then
-    git clone https://github.com/openhwgroup/cva6.git cva6_temp
-    mv cva6_temp/* cva6/
-    rm -rf cva6_temp
-fi
+git clone https://github.com/openhwgroup/cva6.git cva6
 
 # Run system-level integration test
 bash integration/uvm_system/run_uvm.sh
@@ -639,8 +627,8 @@ TESTNAME=sa_random_test bash garuda/dv/uvm_systolic/run_uvm.sh
 UVM_VERBOSITY=UVM_HIGH TESTNAME=sa_smoke_test \
   bash garuda/dv/uvm_systolic/run_uvm.sh
 
-# Save waveforms
-KEEP_WAVES=1 TESTNAME=sa_smoke_test \
+# Run systolic test
+TESTNAME=sa_smoke_test \
   bash garuda/dv/uvm_systolic/run_uvm.sh
 ```
 
@@ -652,9 +640,8 @@ TESTNAME=amk_smoke_test bash garuda/dv/uvm_attention/run_uvm.sh
 # Random test with different sequence lengths
 TESTNAME=amk_random_test bash garuda/dv/uvm_attention/run_uvm.sh
 
-# View waveform
-KEEP_WAVES=1 bash garuda/dv/uvm_attention/run_uvm.sh
-gtkwave waves/tb_attention*.vcd &
+# View test results
+cat build/uvm_attention/amk_smoke_test.log
 ```
 
 **KV Cache - Sequence History**
@@ -803,29 +790,33 @@ cat ci/verilator_timing.csv
 
 #### 3.1 Generate and View Waveforms
 
-**Generate UVM Waveforms**
+**Waveform Capture (Advanced)**
+
+> **Note:** Waveform capture via `-vvp` flag is not currently enabled in the test scripts. The following shows how to manually add it for debugging specific test failures.
+
 ```bash
-# Re-run tests with waveform capture
-cd /home/aditya/sakec_hack/garuda-accelerator-personal-main
+# To enable waveforms, you can modify the iverilog compilation command to include -vvp flag
+# For example, in garuda/dv/uvm_attention/run_uvm.sh:
 
-# Keep waveforms from all tests
-KEEP_WAVES=1 bash garuda/dv/run_uvm_regression.sh
+iverilog -g2012 -o tb_attention.vvp \
+  -vvp=waves/attention.vvp \  # <-- Add this line
+  garuda/rtl/attention_microkernel_engine.sv \
+  garuda/tb/tb_attention_microkernel_latency.sv
 
-# Waveforms saved to:
-ls -lh waves/uvm_regression/
-# Files: uvm_*.vcd (waveform dump files)
+vvp tb_attention.vvp -vcd waves/attention.vcd
+gtkwave waves/attention.vcd &
 ```
 
-**Open in GTKWave**
+**Alternatively, view existing waveforms**
 ```bash
-# View systolic array operations
-gtkwave waves/uvm_regression/uvm_systolic_sa_smoke_test.vcd &
-
-# View attention engine
-gtkwave waves/uvm_regression/uvm_attention_amk_smoke_test.vcd &
-
-# View KV cache operations
-gtkwave waves/uvm_regression/uvm_kv_cache_kv_smoke_test.vcd &
+# Some tests generate .vvp files that can be converted
+if [ -f "waves/tb_attention.vvp" ]; then
+  vvp waves/tb_attention.vvp -vcd waves/tb_attention.vcd
+  gtkwave waves/tb_attention.vcd &
+else
+  echo "Waveforms not available. Check test logs instead:"
+  cat build/uvm_attention/*.log
+fi
 ```
 
 **What to Look For in Waveforms**

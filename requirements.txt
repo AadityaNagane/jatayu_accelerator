@@ -1,0 +1,13 @@
+# Core dependencies for JATAYU/GARUDA Accelerator
+
+# Quantization and model loading
+numpy>=1.21.0,<2.0.0
+transformers>=4.30.0
+torch>=2.0.0
+
+# YAML support for configuration
+PyYAML>=6.0
+
+# Optional: for advanced analysis
+matplotlib>=3.5.0
+scipy>=1.7.0
