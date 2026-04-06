@@ -130,6 +130,7 @@ module tb_register_rename_table;
     arch_rd_i[0*5 +: 5]  = 5'd5;  // x5 (destination)
     @(posedge clk);
     
+    // Check outputs BEFORE #1 delay (before rename_table updates are visible)
     if (rename_ready_o[0]) begin
       check_result(2, "Rename ready", 1'b1, 1'b1);
       check_result(2, "Physical rs1 is x3", phys_rs1_o[0*$clog2(PHYS_REGS) +: $clog2(PHYS_REGS)] == 5'd3, 1'b1);
@@ -144,8 +145,13 @@ module tb_register_rename_table;
       check_result(2, "Rename ready", 1'b0, 1'b1);
     end
     
+    #1;  // Let non-blocking assignments propagate in Verilator
+    
     rename_valid_i[0] = 1'b0;
     @(posedge clk);
+    #1;
+    @(posedge clk);  // Extra cycle for non-blocking assignments to propagate
+    #1;
     
     // Test 3: Check free list count after rename
     $display("\n[TEST 3] Free list after rename");
@@ -181,6 +187,9 @@ module tb_register_rename_table;
     
     rename_valid_i = '0;
     @(posedge clk);
+    #1;
+    @(posedge clk);  // Extra cycle for state to stabilize
+    #1;
     
     // Test 5: Test false dependency removal
     $display("\n[TEST 5] False dependency removal");
@@ -197,6 +206,7 @@ module tb_register_rename_table;
     arch_rd_i[1*5 +: 5]  = 5'd6;
     
     @(posedge clk);
+    #1;
     
     if (rename_ready_o[0] && rename_ready_o[1]) begin
       // x5 should map to old physical register (before rename) for instruction 1
@@ -213,6 +223,9 @@ module tb_register_rename_table;
     
     rename_valid_i = '0;
     @(posedge clk);
+    #1;
+    @(posedge clk);  // Extra cycle for state to stabilize
+    #1;
     
     // Test 6: Commit operation (return physical register to free list)
     $display("\n[TEST 6] Commit operation");
@@ -223,12 +236,17 @@ module tb_register_rename_table;
     commit_phys_rd_i[0*$clog2(PHYS_REGS) +: $clog2(PHYS_REGS)] =
         saved_old_p5;  // Commit old physical reg saved from Test 2
     @(posedge clk);
+    #1;
     commit_valid_i[0] = 1'b0;
     commit_phys_rd_i = '0;
     
     // Wait a few cycles for commit to process
     @(posedge clk);
+    #1;
     @(posedge clk);
+    #1;
+    @(posedge clk);  // Extra cycle to ensure free list updates propagate
+    #1;
     
     check_result(6, "Free count increased", free_count_o == (free_count_before + 1), 1'b1);
     
@@ -240,6 +258,7 @@ module tb_register_rename_table;
     arch_rd_i[0*5 +: 5]  = 5'd0;  // x0 (destination - should not rename!)
     
     @(posedge clk);
+    #1;
     
     if (rename_ready_o[0]) begin
       check_result(7, "x0 rs1 maps to p0",
@@ -250,11 +269,15 @@ module tb_register_rename_table;
     
     rename_valid_i = '0;
     @(posedge clk);
+    #1;
+    @(posedge clk);  // Extra cycle to ensure free_count_o is updated
+    #1;
     
     // Test 8: Free list exhaustion (rename many registers)
     $display("\n[TEST 8] Free list exhaustion test");
     renames = 0;
     start_free = free_count_o;
+    $display("    Starting free count: %0d", start_free);
     
     // Rename until free list is empty (should stop when free regs are exhausted)
     for (int i = 0; i < (start_free + 5); i++) begin
@@ -264,6 +287,7 @@ module tb_register_rename_table;
       arch_rs2_i[0*5 +: 5] = 5'd2;
       
       @(posedge clk);
+      #1;
       
       if (rename_ready_o[0]) begin
         renames++;
@@ -271,7 +295,11 @@ module tb_register_rename_table;
       
       rename_valid_i[0] = 1'b0;
       @(posedge clk);
+      #1;
     end
+    
+    @(posedge clk);  // Extra cycle for free list to settle
+    #1;
     
     check_result(8, "Renames before exhaustion", renames == start_free, 1'b1);
     check_result(8, "Free list empty", free_list_empty_o == 1'b1, 1'b1);
