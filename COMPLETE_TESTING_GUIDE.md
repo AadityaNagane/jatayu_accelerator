@@ -224,17 +224,9 @@ ls -la
 export JATAYU_ROOT=$(pwd)
 export UVM_HOME=$(pwd)/third_party/uvm-1.2
 
-# Optional: Populate CVA6 directory (if doing full system integration)
-if [ ! -d cva6 ]; then
-	echo "[INFO] Cloning CVA6 with initial submodules..."
-	git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
-fi
-
-# ALWAYS ensure all CVA6 nested submodules are initialized
-# (This runs whether we just cloned or directory already existed)
-echo "[INFO] Initializing all CVA6 submodules including nested dependencies..."
-cd cva6 && git submodule update --init --recursive && cd ..
-echo "[DONE] CVA6 setup complete"
+# Optional: Setup CVA6 with all submodules (if doing full system integration)
+# This script handles both fresh clones and initializing nested dependencies
+bash setup_cva6.sh
 ```
 
 ### Python Dependencies
@@ -1207,14 +1199,26 @@ fi
 ```
 After cloning, the else block never executes, so nested submodules don't get initialized.
 
-**Solution - Always initialize submodules:**
+**Solution - Use the provided setup script (easiest):**
 ```bash
-# ✅ CORRECT: Always run submodule init (whether new clone or existing)
+# Provided script handles all complexity automatically
+bash setup_cva6.sh
+```
+
+This script:
+- Clones CVA6 if missing
+- Initializes ALL nested submodules (cvfpu, hpdcache, etc.)
+- Verifies critical files are present
+- Much simpler than manual commands!
+
+**Manual solution (if script isn't available):**
+```bash
+# Clone if missing
 if [ ! -d cva6 ]; then
     git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
 fi
 
-# This ALWAYS runs - ensures nested submodules are complete
+# Always initialize nested submodules
 cd cva6 && git submodule update --init --recursive && cd ..
 
 # Verify submodules are populated
@@ -1229,7 +1233,9 @@ bash integration/uvm_system/run_uvm.sh
 ```
 
 **Prevention:**
-Use the updated setup script from COMPLETE_TESTING_GUIDE.md which always initializes submodules after cloning.
+- Always run `bash setup_cva6.sh` after cloning jatayu_accelerator
+- Don't manually paste inline conditionals (shell syntax issues with indentation)
+- Let the script handle complexity
 
 ---
 
