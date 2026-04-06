@@ -20,11 +20,11 @@ iverilog -g2012 -o "$BUILD_DIR/tb_sa.vvp" \
 echo "[INFO] Running systolic smoke test: ${TESTNAME} (seed=${SEED})"
 vvp "$BUILD_DIR/tb_sa.vvp" +seed=$SEED +dumpfile="${DUMPFILE}" | tee "$BUILD_DIR/${TESTNAME}_seed${SEED}.log"
 
-if grep -Eq "SOME TESTS FAILED|Failed:[[:space:]]*[1-9][0-9]*|\[FAIL\]" "$BUILD_DIR/${TESTNAME}.log"; then
+if grep -Eq "SOME TESTS FAILED|Failed:[[:space:]]*[1-9][0-9]*|\[FAIL\]" "$BUILD_DIR/${TESTNAME}_seed${SEED}.log"; then
   echo "[ERROR] Systolic smoke test reported failures"
   exit 1
 fi
 
 echo "[DONE] Systolic smoke test passed"
 echo "       Test: ${TESTNAME}"
-echo "       Log: $BUILD_DIR/${TESTNAME}.log"
+echo "       Log: $BUILD_DIR/${TESTNAME}_seed${SEED}.log"
