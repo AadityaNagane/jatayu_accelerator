@@ -631,6 +631,45 @@ UVM_VERBOSITY=UVM_HIGH TESTNAME=sa_smoke_test \
 # Run systolic test
 TESTNAME=sa_smoke_test \
   bash garuda/dv/uvm_systolic/run_uvm.sh
+
+# Run with specific seed for reproducibility
+SEED=42 TESTNAME=sa_random_test \
+  bash garuda/dv/uvm_systolic/run_uvm.sh
+
+# Run multiple seeds (automated regression)
+bash garuda/dv/uvm_systolic/run_uvm_multi_seed.sh sa_random_test 1 10
+
+# Run 20 seeds (thorough regression)
+bash garuda/dv/uvm_systolic/run_uvm_multi_seed.sh sa_random_test 1 20
+
+# Check seed-based test results
+ls -la build/uvm_systolic/*seed*.log
+cat build/uvm_systolic/sa_random_test_seed42.log
+```
+
+**Understanding Seed-Based Testing**
+
+Seed-based testing allows you to:
+- Generate different random test vectors each time
+- Reproduce issues by using the same seed
+- Build confidence in the design through many random variations
+
+The seed value controls:
+- Input matrix values (weights and activations)
+- Test vector patterns
+- Enable/disable modes
+- Result validation
+
+When you run a test with a specific seed (e.g., `SEED=42`), you can reproduce the exact same test vectors:
+```bash
+# Run 1
+SEED=42 TESTNAME=sa_random_test bash garuda/dv/uvm_systolic/run_uvm.sh
+
+# The output will be identical to a later run with the same seed:
+# Run 2 (several hours later)
+SEED=42 TESTNAME=sa_random_test bash garuda/dv/uvm_systolic/run_uvm.sh
+
+# Output is reproducible
 ```
 
 **Attention Microkernel**

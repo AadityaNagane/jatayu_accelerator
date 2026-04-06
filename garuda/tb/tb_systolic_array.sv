@@ -40,6 +40,10 @@ module tb_systolic_array;
   localparam int unsigned MAX_WAIT_CYCLES = 200;
   reg [1023:0] dumpfile_path;
   
+  // Seed support for randomization
+  int seed_value = 0;
+  string seed_str;
+  
   // Clock generation
   initial begin
     clk = 0;
@@ -59,6 +63,14 @@ module tb_systolic_array;
       $display("[WAVE] Dumping VCD to %0s", dumpfile_path);
       $dumpfile(dumpfile_path);
       $dumpvars(0, tb_systolic_array);
+    end
+    
+    // Get seed from command line: run with +seed=<value>
+    // Icarus Verilog uses +seed internally for $random()
+    if ($value$plusargs("seed=%d", seed_value)) begin
+      $display("[SEED] Test seed: %0d (passed as +seed=%0d)", seed_value, seed_value);
+    end else begin
+      $display("[SEED] Using default seed");
     end
   end
   
@@ -88,17 +100,29 @@ module tb_systolic_array;
   
   // Initialize test matrices
   task init_matrices();
-    // Matrix A (weights) - simple pattern
+    // Matrix A (weights) - randomized or pattern-based based on seed
     for (int i = 0; i < ROW_SIZE; i++) begin
       for (int j = 0; j < COL_SIZE; j++) begin
-        matrix_a[i][j] = i + j;  // Pattern: row + col
+        if (seed_value > 0) begin
+          // Random test vectors
+          matrix_a[i][j] = $random() % 256;
+        end else begin
+          // Deterministic pattern: row + col
+          matrix_a[i][j] = i + j;
+        end
       end
     end
     
-    // Matrix B (activations) - identity-like
+    // Matrix B (activations) - randomized or pattern-based based on seed
     for (int i = 0; i < COL_SIZE; i++) begin
       for (int j = 0; j < ROW_SIZE; j++) begin
-        matrix_b[i][j] = (i == j) ? 8'd1 : 8'd0;  // Identity-like
+        if (seed_value > 0) begin
+          // Random test vectors
+          matrix_b[i][j] = $random() % 256;
+        end else begin
+          // Identity-like pattern
+          matrix_b[i][j] = (i == j) ? 8'd1 : 8'd0;
+        end
       end
     end
     
