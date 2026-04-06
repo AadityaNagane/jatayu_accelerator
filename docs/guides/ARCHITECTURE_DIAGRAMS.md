@@ -511,7 +511,7 @@ pandoc architecture_slides.md -o architecture_handout.pdf -V lang=en-US
 ```markdown
 ---
 title: Jatayu RISC-V LLM Accelerator
-author: SPIT VLSI Competition
+author: Jatayu Contributors
 date: April 2026
 ---
 

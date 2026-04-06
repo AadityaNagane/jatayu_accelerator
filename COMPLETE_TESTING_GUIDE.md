@@ -2,7 +2,7 @@
 
 **Project:** Hardware-Accelerated Qwen 2.5 LLM Inference on RISC-V  
 **Status:** ✅ Production-Ready | Hardware Verified | All Tests Passing  
-**Date:** April 2026 | **Hackathon:** SPIT VLSI Design Competition
+**Date:** April 2026
 
 ---
 
