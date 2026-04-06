@@ -150,10 +150,10 @@ VERILATOR_ROOT := $(shell \
 		dirname "$(VERILATOR_BIN_PATH)"; \
 	fi)
 endif
-endif
 # Export VERILATOR_ROOT if we found it
 ifneq ($(VERILATOR_ROOT),)
 export VERILATOR_ROOT
+endif
 endif
 
 COMPILE_FLAGS := --cc --exe --build -Wno-fatal
@@ -189,7 +189,7 @@ compile: extract-cva6-files
 	@# Workaround: If verilator_bin is at /usr/bin/verilator_bin but wrapper expects /usr/share/verilator/verilator_bin,
 	@# try to create the expected directory structure or use the binary directly
 	@if [ -f /usr/bin/verilator_bin ] && [ ! -f /usr/share/verilator/verilator_bin ]; then \
-		if [ -d /usr/share/verilator ] && [ -w /usr/share/verilator ] 2>/dev/null; then \
+		if [ -d /usr/share/verilator ] && [ -w /usr/share/verilator ]; then \
 			echo "Creating symlink: /usr/share/verilator/verilator_bin -> /usr/bin/verilator_bin"; \
 			ln -sf /usr/bin/verilator_bin /usr/share/verilator/verilator_bin 2>/dev/null || true; \
 		else \

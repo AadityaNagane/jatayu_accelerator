@@ -225,7 +225,13 @@ export JATAYU_ROOT=$(pwd)
 export UVM_HOME=$(pwd)/third_party/uvm-1.2
 
 # Optional: Populate CVA6 directory (if doing full system integration)
-git clone https://github.com/openhwgroup/cva6.git cva6
+if [ ! -d cva6 ]; then
+	git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
+else
+	echo "CVA6 directory already exists, skipping clone"
+	# Note: If CVA6 was cloned without --recurse-submodules, initialize submodules:
+	# cd cva6 && git submodule update --init --recursive && cd ..
+fi
 ```
 
 ### Python Dependencies
@@ -523,7 +529,13 @@ bash garuda/dv/uvm_matmul_ctrl/run_uvm.sh
 **Testing:**
 ```bash
 # Optional: Populate CVA6 if not already present
-git clone https://github.com/openhwgroup/cva6.git cva6
+if [ ! -d cva6 ]; then
+	git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
+else
+	echo "CVA6 directory already exists, skipping clone"
+	# Note: If CVA6 was cloned without --recurse-submodules, initialize submodules:
+	# cd cva6 && git submodule update --init --recursive && cd ..
+fi
 
 # Run system-level integration test
 bash integration/uvm_system/run_uvm.sh
