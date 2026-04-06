@@ -576,8 +576,6 @@ ls cva6/ | head -5  # Should see: src/, docs/, etc.
 ### Fastest Way to See Everything Working
 
 ```bash
-cd /home/aditya/sakec_hack/garuda-accelerator-personal-main
-
 # Step 1: Run all UVM tests (2 min)
 echo "=== Running UVM Regression (14 tests) ==="
 bash garuda/dv/run_uvm_regression.sh
@@ -612,8 +610,6 @@ GARUDA_USE_RTL=1 ../../garuda_inference_rtl 2>&1 | tail -50
 #### 1.1 Run All Tests at Once
 
 ```bash
-cd /home/aditya/sakec_hack/garuda-accelerator-personal-main
-
 # Full regression
 bash garuda/dv/run_uvm_regression.sh
 
@@ -872,8 +868,6 @@ diff waves/before/ waves/after/
 
 **Generate Quantized Weights**
 ```bash
-cd /home/aditya/sakec_hack/garuda-accelerator-personal-main
-
 # Quantize Qwen 2.5 model to INT8
 python3 scripts/quantize_qwen_weights.py \
   --model qwen-2.5-0.5b \
@@ -1376,7 +1370,6 @@ project-root/
 
 ```bash
 # === SETUP ===
-cd /home/aditya/sakec_hack/garuda-accelerator-personal-main
 export UVM_HOME=$(pwd)/third_party/uvm-1.2
 
 # === UVM TESTS (14 total, ~2-3 min) ===
