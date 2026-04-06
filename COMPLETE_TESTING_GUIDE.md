@@ -226,12 +226,15 @@ export UVM_HOME=$(pwd)/third_party/uvm-1.2
 
 # Optional: Populate CVA6 directory (if doing full system integration)
 if [ ! -d cva6 ]; then
+	echo "[INFO] Cloning CVA6 with initial submodules..."
 	git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
-else
-	echo "CVA6 directory already exists, skipping clone"
-	# IMPORTANT: Initialize CVA6 submodules (required for cvfpu, hpdcache, etc.)
-	cd cva6 && git submodule update --init --recursive && cd ..
 fi
+
+# ALWAYS ensure all CVA6 nested submodules are initialized
+# (This runs whether we just cloned or directory already existed)
+echo "[INFO] Initializing all CVA6 submodules including nested dependencies..."
+cd cva6 && git submodule update --init --recursive && cd ..
+echo "[DONE] CVA6 setup complete"
 ```
 
 ### Python Dependencies
@@ -1192,11 +1195,27 @@ grep -i "error" build/uvm_regression/*.log | head -20
 
 **Cause:** CVA6 submodules (cvfpu, hpdcache, etc.) not downloaded
 
-**Solution:**
+**Why the if/else script might not work:**
+The original script only runs submodule initialization in the `else` branch (when cva6 already exists):
 ```bash
-# Initialize all CVA6 submodules (nested dependencies)
-cd cva6
-git submodule update --init --recursive
+# ❌ PROBLEMATIC: submodule init only in else block
+if [ ! -d cva6 ]; then
+    git clone --recurse-submodules ... cva6  # Clone branch executes
+else
+    cd cva6 && git submodule update ... cd ..  # Else never runs after clone!
+fi
+```
+After cloning, the else block never executes, so nested submodules don't get initialized.
+
+**Solution - Always initialize submodules:**
+```bash
+# ✅ CORRECT: Always run submodule init (whether new clone or existing)
+if [ ! -d cva6 ]; then
+    git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
+fi
+
+# This ALWAYS runs - ensures nested submodules are complete
+cd cva6 && git submodule update --init --recursive && cd ..
 
 # Verify submodules are populated
 ls core/cvfpu/src/
@@ -1206,17 +1225,11 @@ ls core/cache_subsystem/hpdcache/rtl/src/
 # Should show: utils/, common/, ... directories
 
 # Then retry system integration
-cd ..
 bash integration/uvm_system/run_uvm.sh
 ```
 
 **Prevention:**
-When cloning fresh jatayu_accelerator with CVA6, use:
-```bash
-git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
-```
-
-Or ensure submodules are initialized after clone with the command above.
+Use the updated setup script from COMPLETE_TESTING_GUIDE.md which always initializes submodules after cloning.
 
 ---
 
