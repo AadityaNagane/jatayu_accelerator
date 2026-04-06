@@ -1,4 +1,4 @@
 mode,testbench,duration_ms
-smoke,tb_attention_microkernel_latency,384
-smoke,tb_norm_act_ctrl,112
-smoke,TOTAL,615
+smoke,tb_attention_microkernel_latency,9601
+smoke,tb_norm_act_ctrl,11098
+smoke,TOTAL,20856

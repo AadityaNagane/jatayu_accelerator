@@ -1,0 +1,191 @@
+{
+  "model": "Qwen/Qwen2.5-0.5B",
+  "quantization": {
+    "method": "symmetric",
+    "dtype": "int8",
+    "layers": 49,
+    "compression_ratio": 4.0
+  },
+  "shape_info": {
+    "transformer.h.0.self_attn.c_attn.weight": [
+      1024,
+      3072
+    ],
+    "transformer.h.0.self_attn.c_proj.weight": [
+      1024,
+      1024
+    ],
+    "transformer.h.0.mlp.w1.weight": [
+      4096,
+      1024
+    ],
+    "transformer.h.0.mlp.w2.weight": [
+      1024,
+      4096
+    ],
+    "transformer.h.0.ln_1.weight": [
+      1024
+    ],
+    "transformer.h.0.ln_2.weight": [
+      1024
+    ],
+    "transformer.h.1.self_attn.c_attn.weight": [
+      1024,
+      3072
+    ],
+    "transformer.h.1.self_attn.c_proj.weight": [
+      1024,
+      1024
+    ],
+    "transformer.h.1.mlp.w1.weight": [
+      4096,
+      1024
+    ],
+    "transformer.h.1.mlp.w2.weight": [
+      1024,
+      4096
+    ],
+    "transformer.h.1.ln_1.weight": [
+      1024
+    ],
+    "transformer.h.1.ln_2.weight": [
+      1024
+    ],
+    "transformer.h.2.self_attn.c_attn.weight": [
+      1024,
+      3072
+    ],
+    "transformer.h.2.self_attn.c_proj.weight": [
+      1024,
+      1024
+    ],
+    "transformer.h.2.mlp.w1.weight": [
+      4096,
+      1024
+    ],
+    "transformer.h.2.mlp.w2.weight": [
+      1024,
+      4096
+    ],
+    "transformer.h.2.ln_1.weight": [
+      1024
+    ],
+    "transformer.h.2.ln_2.weight": [
+      1024
+    ],
+    "transformer.h.3.self_attn.c_attn.weight": [
+      1024,
+      3072
+    ],
+    "transformer.h.3.self_attn.c_proj.weight": [
+      1024,
+      1024
+    ],
+    "transformer.h.3.mlp.w1.weight": [
+      4096,
+      1024
+    ],
+    "transformer.h.3.mlp.w2.weight": [
+      1024,
+      4096
+    ],
+    "transformer.h.3.ln_1.weight": [
+      1024
+    ],
+    "transformer.h.3.ln_2.weight": [
+      1024
+    ],
+    "transformer.h.4.self_attn.c_attn.weight": [
+      1024,
+      3072
+    ],
+    "transformer.h.4.self_attn.c_proj.weight": [
+      1024,
+      1024
+    ],
+    "transformer.h.4.mlp.w1.weight": [
+      4096,
+      1024
+    ],
+    "transformer.h.4.mlp.w2.weight": [
+      1024,
+      4096
+    ],
+    "transformer.h.4.ln_1.weight": [
+      1024
+    ],
+    "transformer.h.4.ln_2.weight": [
+      1024
+    ],
+    "transformer.h.5.self_attn.c_attn.weight": [
+      1024,
+      3072
+    ],
+    "transformer.h.5.self_attn.c_proj.weight": [
+      1024,
+      1024
+    ],
+    "transformer.h.5.mlp.w1.weight": [
+      4096,
+      1024
+    ],
+    "transformer.h.5.mlp.w2.weight": [
+      1024,
+      4096
+    ],
+    "transformer.h.5.ln_1.weight": [
+      1024
+    ],
+    "transformer.h.5.ln_2.weight": [
+      1024
+    ],
+    "transformer.h.6.self_attn.c_attn.weight": [
+      1024,
+      3072
+    ],
+    "transformer.h.6.self_attn.c_proj.weight": [
+      1024,
+      1024
+    ],
+    "transformer.h.6.mlp.w1.weight": [
+      4096,
+      1024
+    ],
+    "transformer.h.6.mlp.w2.weight": [
+      1024,
+      4096
+    ],
+    "transformer.h.6.ln_1.weight": [
+      1024
+    ],
+    "transformer.h.6.ln_2.weight": [
+      1024
+    ],
+    "transformer.h.7.self_attn.c_attn.weight": [
+      1024,
+      3072
+    ],
+    "transformer.h.7.self_attn.c_proj.weight": [
+      1024,
+      1024
+    ],
+    "transformer.h.7.mlp.w1.weight": [
+      4096,
+      1024
+    ],
+    "transformer.h.7.mlp.w2.weight": [
+      1024,
+      4096
+    ],
+    "transformer.h.7.ln_1.weight": [
+      1024
+    ],
+    "transformer.h.7.ln_2.weight": [
+      1024
+    ],
+    "transformer.wte.weight": [
+      32000,
+      1024
+    ]
+  }
+}
