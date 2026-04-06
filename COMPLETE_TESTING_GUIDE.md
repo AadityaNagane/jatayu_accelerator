@@ -229,8 +229,8 @@ if [ ! -d cva6 ]; then
 	git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
 else
 	echo "CVA6 directory already exists, skipping clone"
-	# Note: If CVA6 was cloned without --recurse-submodules, initialize submodules:
-	# cd cva6 && git submodule update --init --recursive && cd ..
+	# IMPORTANT: Initialize CVA6 submodules (required for cvfpu, hpdcache, etc.)
+	cd cva6 && git submodule update --init --recursive && cd ..
 fi
 ```
 
@@ -1185,6 +1185,38 @@ grep -i "error" build/uvm_regression/*.log | head -20
 # If "typedef" error, apply fix:
 # See COMPLETE_FIX.md in docs/
 ```
+
+#### Issue 6: "CVA6 Integration - Cannot find cvfpu or hpdcache files"
+
+**Error:** `Cannot find file containing module: '../cva6/core/cvfpu/...'`
+
+**Cause:** CVA6 submodules (cvfpu, hpdcache, etc.) not downloaded
+
+**Solution:**
+```bash
+# Initialize all CVA6 submodules (nested dependencies)
+cd cva6
+git submodule update --init --recursive
+
+# Verify submodules are populated
+ls core/cvfpu/src/
+# Should show: common_cells/, fpu_div_sqrt_mvp/, fpnew_*.sv files, etc.
+
+ls core/cache_subsystem/hpdcache/rtl/src/
+# Should show: utils/, common/, ... directories
+
+# Then retry system integration
+cd ..
+bash integration/uvm_system/run_uvm.sh
+```
+
+**Prevention:**
+When cloning fresh jatayu_accelerator with CVA6, use:
+```bash
+git clone --recurse-submodules https://github.com/openhwgroup/cva6.git cva6
+```
+
+Or ensure submodules are initialized after clone with the command above.
 
 ---
 
