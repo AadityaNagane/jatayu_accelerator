@@ -224,6 +224,12 @@ ls -la
 export JATAYU_ROOT=$(pwd)
 export UVM_HOME=$(pwd)/third_party/uvm-1.2
 
+# UVM 1.2 Repository (Accellera official implementation, IEEE 1800.2-2020)
+# Repository: https://github.com/accellera-official/uvm-core.git
+# Version: 1800.2-2020 (2020.3.1)
+# License: Apache-2.0
+# The UVM implementation is included in third_party/uvm-1.2/
+
 # Optional: Setup CVA6 with all submodules (if doing full system integration)
 # This script handles both fresh clones and initializing nested dependencies
 bash setup_cva6.sh
