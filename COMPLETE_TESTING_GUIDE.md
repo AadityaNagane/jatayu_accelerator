@@ -216,6 +216,9 @@ sudo apt update && sudo apt install -y \
 git clone https://github.com/AadityaNagane/jatayu_accelerator.git
 cd jatayu_accelerator
 
+# Clone UVM 1.2 Repository (Accellera official implementation, IEEE 1800.2-2020)
+git clone https://github.com/accellera-official/uvm-core.git third_party/uvm-1.2
+
 # Verify structure
 ls -la
 # Expected: garuda/, integration/, ci/, scripts/, docs/, cva6/, etc.
@@ -224,7 +227,7 @@ ls -la
 export JATAYU_ROOT=$(pwd)
 export UVM_HOME=$(pwd)/third_party/uvm-1.2
 
-# UVM 1.2 Repository (Accellera official implementation, IEEE 1800.2-2020)
+# UVM 1.2 Repository Details (Accellera official implementation, IEEE 1800.2-2020)
 # Repository: https://github.com/accellera-official/uvm-core.git
 # Version: 1800.2-2020 (2020.3.1)
 # License: Apache-2.0
